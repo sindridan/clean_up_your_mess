@@ -1,7 +1,7 @@
 #main function
 
 def get_valid_file_types(files):
-    valid_type = ['avi', 'mkv', 'mp3', 'mp4']
+    valid_type = ['avi', 'mkv', 'mp4']
     
     filtered_accepetables = []
     formatted_file_name = []
