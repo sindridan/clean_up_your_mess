@@ -13,4 +13,4 @@ End goal is for us to sort based on the Series name and what season the episode 
 
 ## Built with
 * [VS Code](https://code.visualstudio.com/Download) - Code editor
-* [Python] (https://www.python.org/) - Programming language
+* [Python](https://www.python.org/) - Programming language
