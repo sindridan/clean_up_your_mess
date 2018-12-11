@@ -6,6 +6,8 @@ Fall 2018
 A python script to clean up a directory containing downloaded tv-series and movies.
 End goal is for us to sort based on the Series name and what season the episode is in.
 
+## Required libraries:
+* [Parse-Torrent-Name](https://github.com/divijbindlish/parse-torrent-name#parse-torrent-name-) - Used to parse the filenames
 
 ## Developers
 * Arnar Pálmi Elvarsson - *arnare15* - [github](https://github.com/arnarish)
