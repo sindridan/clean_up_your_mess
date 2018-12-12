@@ -1,7 +1,7 @@
+import os, re, PTN, shutil
+############################################
 #main function
 #r"^.*S\d\dE\d\d" < possible show and episode regex
-
-import os, re, PTN
 def get_valid_file_types(Directory):
     #all valid video file types
     valid_type =  ["m4v", "flv", "mpeg", "mov", "mpg","mpe", "wmv", "MOV", "mp4"] 
@@ -33,14 +33,22 @@ def get_valid_file_types(Directory):
     else:
         print("We're missing some files captain")
         return
+    print(fileCounter)
+
+    print(len(Shows))
+    return Shows
+
+#get_valid_file_types('downloads')
+
+############################################ 
+def test_sort_to_new_folder(direct, target):
+    lis = get_valid_file_types(direct)
     
+    print(lis)
 
-    print(Shows)
-    return None
+    for show in lis:
+        shutil.move(show[-1], target)
 
-get_valid_file_types("downloads")
-
-def main_func(s):
-    return None
+test_sort_to_new_folder('downloads', 'downloads/moved')
 
 
