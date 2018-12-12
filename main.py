@@ -1,54 +1,90 @@
 import os, re, PTN, shutil
 ############################################
 #main function
-#r"^.*S\d\dE\d\d" < possible show and episode regex
+
+import os, re, PTN
+
+def sort_Unordered(Unordered):
+    movies = []
+    tvShows = []
+    unknown = []
+    for tup in Unordered:
+        info = tup[0]
+        #print(info)
+        if 'episode' in info and 'season' not in info: #Default to Season 01
+            season = "S01"
+            episode = "E"+str(info['episode'])
+            title = info['title'].lower()
+            tvShows.append((title, season, episode, tup[1]))
+        elif 'season' and 'episode' in info:
+            season = "S"+ str(info['season'])
+            episode = "E"+str(info['episode'])
+            title = info['title'].lower()
+            tvShows.append((title, season, episode, tup[1]))
+        #Should have covered most of the tv-shows excluding oddly named ones
+        elif 'year' in info: 
+            title = info['title'].lower()
+            movies.append((title, tup[1]))
+        else: #these files require further checking, for now we put them into unknowns
+            unknown.append(tup)
+    
+    print(tvShows)
+    return tvShows, movies, unknown
+
 def get_valid_file_types(Directory):
     #all valid video file types
-    valid_type =  ["m4v", "flv", "mpeg", "mov", "mpg","mpe", "wmv", "MOV", "mp4"] 
+    valid_type =  ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv"]
     Unsorted = []
-    Shows = []
     fileCounter = 0
     for dirName, subDirList, fileList in os.walk(Directory): #Walks the given directory and any subdirectory/ies
         for fName in fileList:
-            if fName.split('.')[-1] in valid_type: #if the file ending matches any valid file ending, append to the list both the filename, and the full path to the file
-                #TODO match show name and season. store differently.
-                #possible solution for naming using https://github.com/divijbindlish/parse-torrent-name
-                #Requires teacher confirmation before we go further.
-                fileCounter += 1
-                info = PTN.parse(fName)
-                if 'episode' not in info: #Catch any movie and bad show filenames
-                    Unsorted.append(info)
-                elif 'episode' and 'season' in info: #No need to work these any further, keep the info we need and the path so we can move the file to the correct folder
-                    Season = "S"+ str(info['season'])
-                    Episode = "E"+str(info['episode'])
-                    title = info['title'].lower()
-                    path = os.path.join(dirName, fName)
-                    Shows.append((title, Season, Episode, path))
-                else: #shouldn't miss anything, but just in case we add anything else also to the unsorted list.
-                    Unsorted.append(info)
-
+            if fName.split('.')[-1] in valid_type: #only check if the file ends in a file-format we're looking for
+                fileCounter += 1 #counter to make sure we're listing every file we check
+                info = PTN.parse(fName) #extract all available information from filename via Parse-Torrent-Name library
+                path = os.path.join(dirName, fName)
+                Unsorted.append((info, path))
+    tvShows, movies, unknown = sort_Unordered(Unsorted)
     #make sure we've sorted every single file applicable to the valid typing
-    if fileCounter == len(Shows) + len(Unsorted):
+    listSum = len(tvShows) + len(unknown) + len(movies)
+    if fileCounter == listSum:
         pass
     else:
         print("We're missing some files captain")
         return
-    print(fileCounter)
 
-    print(len(Shows))
-    return Shows
+    #will return more later
+    return tvShows
 
 #get_valid_file_types('downloads')
 
 ############################################ 
-def test_sort_to_new_folder(direct, target):
-    lis = get_valid_file_types(direct)
-    
-    print(lis)
+#returns a folder name for the file to be placed in
+#creating an appropriate directory targetFolder + '/NameOfShow/Season/..'
+def get_folder_name(name_of_file):
+
+    showName = name_of_file[0]
+    return showName
+
+############################################ 
+#works and places all valid files into a new folder but doesn't keep them in their respective season folder
+#need to atleast rename the individual files that are nondescriptive in their name to match the series name
+def test_sort_to_new_folder(directFolder, targetFolder):
+    lis = get_valid_file_types(directFolder)
 
     for show in lis:
-        shutil.move(show[-1], target)
+        print(show[-1])
+        #Check for folder name:
+        folder_path = str(get_folder_name(show))
+        str_folder_path = targetFolder + '/' + folder_path
+        
+        #this checks the file name of show and checks for corresponding folder name,
+        #if it doesn't exists, it'll create a new one and be moved there
+        if not os.path.exists(str_folder_path):
+            os.makedirs(str_folder_path)
+            shutil.move(show[-1], str_folder_path)
+        else:
+            shutil.move(show[-1], str_folder_path)
+    return None
 
-test_sort_to_new_folder('downloads', 'downloads/moved')
-
+test_sort_to_new_folder('from_folder', 'to_folder')
 
