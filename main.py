@@ -162,6 +162,6 @@ def sort_to_new_folder(directFolder, targetFolder):
 
     return None
 
-sort_to_new_folder('downloads', 'test')
+#sort_to_new_folder('downloads', 'test')
 
 
