@@ -30,7 +30,7 @@ def sort_Unordered(Unordered):
 
 def get_valid_file_types(Directory):
     #all valid video file types
-    valid_type =  ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv"]
+    valid_type =  ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv", "srt"]
     Unsorted = []
     fileCounter = 0
     for dirName, subDirList, fileList in os.walk(Directory): #Walks the given directory and any subdirectory/ies
@@ -53,9 +53,8 @@ def get_valid_file_types(Directory):
     return tvShows
 
 ############################################ 
-#cleans up the folder, removing any unnecessary files like .torrent and .nfo etc
-import os, re, PTN, shutil
-def get_trash_files(directory):
+#cleans up the folder, removing any unnecessary files like .torrent and .nfo etc.
+def delete_trash_files(directory):
     trash = []
     valid_type =  ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv", "srt"]
     for dirName, subDirList, fileList in os.walk(directory): #Walks the given directory and any subdirectory/ies
@@ -64,10 +63,14 @@ def get_trash_files(directory):
                 #info = PTN.parse(fName) #extract all available information from filename via Parse-Torrent-Name library
                 path = os.path.join(dirName, fName)
                 trash.append(path)
-    return(trash)
+    for pls_delete in trash:
+        os.remove(pls_delete)
 
-get_trash_files('from_folder')
-
+############################################ 
+#delete any empty folders left behind after sorting -- virkar ekki 
+def delete_empty_folders(directory):
+    if not os.listdir(directory):
+        os.rmdir(directory)
 
 ############################################ 
 #returns a folder name for the file to be placed in
@@ -75,14 +78,14 @@ get_trash_files('from_folder')
 def get_series_name(name_of_file):
 
     showName = name_of_file[0]
-    return showName
+    return str(showName)
 
 ############################################ 
 #returns a folder name for the file to be placed in
 #creating an appropriate directory targetFolder + '/NameOfShow/Seasons XX/..'
 def get_season(name_of_file):
     seasonVal = name_of_file[1]
-    return seasonVal
+    return str(seasonVal)
 
 ############################################ 
 #places all valid files into a new folder based on their name, and then into a specific season folder
@@ -90,8 +93,8 @@ def sort_to_new_folder(directFolder, targetFolder):
     lis = get_valid_file_types(directFolder)
 
     for show in lis:
-        name_folder_path = str(get_series_name(show))
-        season_folder_path = str(get_season(show))
+        name_folder_path = get_series_name(show)
+        season_folder_path = get_season(show)
         str_folder_path = targetFolder + '/' + name_folder_path + '/' + season_folder_path
         #this checks the file name of show and checks for corresponding folder name,
         #if it doesn't exists, it'll create a new one and be moved there
@@ -103,12 +106,11 @@ def sort_to_new_folder(directFolder, targetFolder):
             shutil.move(show[-1], str_folder_path)
         
         #trash function for unrelated files after sorting
-        trash_files = get_trash_files(directFolder)
-        for trash in trash_files:
-            os.remove(trash)
+        delete_trash_files(directFolder)
+        delete_empty_folders(directFolder)
 
     return None
 
-sort_to_new_folder('from_folder', 'to_folder')
+#sort_to_new_folder('from_folder', 'to_folder')
 
 
