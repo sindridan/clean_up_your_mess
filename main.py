@@ -97,7 +97,7 @@ def get_valid_file_types(Directory):
         print(x)
     print(len(unknown))
     #will return more later
-    return tvShows
+    return tvShows, movies, unknown
 
 get_valid_file_types("downloads")
 ############################################ 
@@ -115,10 +115,24 @@ def delete_trash_files(directory):
         os.remove(pls_delete)
 
 ############################################ 
-#delete any empty folders left behind after sorting -- virkar ekki 
+#delete any empty folders left behind after sorting
 def delete_empty_folders(directory):
-    if not os.listdir(directory):
-        os.rmdir(directory)
+  if not os.path.isdir(directory):
+    return
+
+  #traverses sub directories and deletes them
+  files = os.listdir(directory)
+  if len(files):
+    for f in files:
+      totalpath = os.path.join(directory, f)
+      if os.path.isdir(totalpath):
+        delete_empty_folders(totalpath)
+
+  #checks the mmain dir and if empty, trashes it
+  files = os.listdir(directory)
+  if len(files) == 0:
+    print("Removing empty folder...")
+    os.rmdir(directory)
 
 ############################################ 
 #returns a folder name for the file to be placed in
@@ -137,14 +151,20 @@ def get_season(name_of_file):
     return str(seasonVal)
 
 ############################################ 
+#returns the movie name
+def get_movie_title(name_of_file):
+    movie_title = name_of_file[0]
+    return str(movie_title)
+
+############################################ 
 #places all valid files into a new folder based on their name, and then into a specific season folder
 def sort_to_new_folder(directFolder, targetFolder):
-    lis = get_valid_file_types(directFolder)
+    tvShows, movies, unknown = get_valid_file_types(directFolder)
 
-    for show in lis:
+    for show in tvShows:
         name_folder_path = get_series_name(show)
         season_folder_path = get_season(show)
-        str_folder_path = targetFolder + '/' + name_folder_path + '/' + season_folder_path
+        str_folder_path = targetFolder + '/' + 'TV' + '/' + name_folder_path + '/' + season_folder_path
         #this checks the file name of show and checks for corresponding folder name,
         #if it doesn't exists, it'll create a new one and be moved there
         #this has been commented out to test the trash function, it works perfectly otherwise
@@ -152,14 +172,28 @@ def sort_to_new_folder(directFolder, targetFolder):
             os.makedirs(str_folder_path)
             shutil.move(show[-1], str_folder_path)
         else:
-            shutil.move(show[-1], str_folder_path)
+            dst_filename = os.path.join(str_folder_path, os.path.basename(show[-1]))
+            shutil.move(show[-1], dst_filename)
+
+    for movie in movies:
+        movie_folder_path = get_movie_title(movie)
+        movie_folder_path = targetFolder + '/' + 'Movies' + '/' + movie_folder_path
+        #creates a directory for the movie itself instead of having each file directly in the movie directory
+        #this causes issues when working with .srt files (subtitles), we want those files 
+        if not os.path.exists(movie_folder_path):
+            os.makedirs(movie_folder_path)
+            shutil.move(movie[-1], movie_folder_path)
+        else:
+            dst_filename = os.path.join(movie_folder_path, os.path.basename(movie[-1]))
+            shutil.move(movie[-1], dst_filename)
+
         
-        #trash function for unrelated files after sorting
-        delete_trash_files(directFolder)
-        delete_empty_folders(directFolder)
+    #trash function for unrelated files after sorting
+    delete_trash_files(directFolder)
+    delete_empty_folders(directFolder)
 
     return None
 
-#sort_to_new_folder('from_folder', 'to_folder')
+#sort_to_new_folder('downloads', 'test')
 
 
