@@ -61,11 +61,10 @@ def get_trash_files(directory):
     for dirName, subDirList, fileList in os.walk(directory): #Walks the given directory and any subdirectory/ies
         for fName in fileList:
             if fName.split('.')[-1] not in valid_type: #only check if the file ends in a file-format we're looking for
-                info = PTN.parse(fName) #extract all available information from filename via Parse-Torrent-Name library
+                #info = PTN.parse(fName) #extract all available information from filename via Parse-Torrent-Name library
                 path = os.path.join(dirName, fName)
-                trash.append((info, path))
-    print(trash)
-    #return(trash)
+                trash.append(path)
+    return(trash)
 
 get_trash_files('from_folder')
 
@@ -97,15 +96,19 @@ def sort_to_new_folder(directFolder, targetFolder):
         #this checks the file name of show and checks for corresponding folder name,
         #if it doesn't exists, it'll create a new one and be moved there
         #this has been commented out to test the trash function, it works perfectly otherwise
-        """if not os.path.exists(str_folder_path):
+        if not os.path.exists(str_folder_path):
             os.makedirs(str_folder_path)
             shutil.move(show[-1], str_folder_path)
         else:
-            shutil.move(show[-1], str_folder_path)"""
+            shutil.move(show[-1], str_folder_path)
         
-        #testing this function
-        get_trash_files(directFolder)
+        #trash function for unrelated files after sorting
+        trash_files = get_trash_files(directFolder)
+        for trash in trash_files:
+            os.remove(trash)
+
     return None
 
 sort_to_new_folder('from_folder', 'to_folder')
+
 
