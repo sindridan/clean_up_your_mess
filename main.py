@@ -93,9 +93,6 @@ def get_valid_file_types(Directory):
     else:
         print("Uh-oh, some files appear to have gotten lost in the filtering")
         return
-    for x in tvShows:
-        print(x)
-    print(len(unknown))
     #will return more later
     return tvShows, movies, unknown
 
@@ -131,11 +128,10 @@ def delete_empty_folders(directory):
   #checks the mmain dir and if empty, trashes it
   files = os.listdir(directory)
   if len(files) == 0:
-    print("Removing empty folder...")
     os.rmdir(directory)
 
 ############################################ 
-#returns a folder name for the file to be placed in
+#returns a folder name fosr the file to be placed in
 #creating an appropriate directory targetFolder + '/NameOfShow/..'
 def get_series_name(name_of_file):
 
@@ -146,8 +142,9 @@ def get_series_name(name_of_file):
 #returns a folder name for the file to be placed in
 #creating an appropriate directory targetFolder + '/NameOfShow/Seasons XX/..'
 def get_season(name_of_file):
-    seasonMatch = re.search(r'\d?\d', name_of_file[1])
-    seasonVal = "Season " + seasonMatch.group(0)
+    """seasonMatch = re.search(r'\d?\d', name_of_file[1])
+    seasonVal = "Season " + seasonMatch.group(0)"""
+    seasonVal = name_of_file[1]
     return str(seasonVal)
 
 ############################################ 
@@ -186,8 +183,17 @@ def sort_to_new_folder(directFolder, targetFolder):
         else:
             dst_filename = os.path.join(movie_folder_path, os.path.basename(movie[-1]))
             shutil.move(movie[-1], dst_filename)
-        
-    for unsort in unknown
+
+    unknown_folder_path = targetFolder + '/' + 'Unknown'   
+    for unsort in unknown:
+        #there will be no special folders for items in the unknown
+        if not os.path.exists(unknown_folder_path):
+            os.makedirs(unknown_folder_path)
+            shutil.move(unsort[-1], unknown_folder_path)
+        else:
+            dst_filename = os.path.join(unknown_folder_path, os.path.basename(unsort[-1]))
+            shutil.move(unsort[-1], dst_filename)
+
 
         
     #trash function for unrelated files after sorting
