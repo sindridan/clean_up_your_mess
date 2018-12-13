@@ -66,8 +66,8 @@ def filterFiles(Unordered):
                 episode = None
                 tvShows.append((title, season, episode, tup[1]))
             else:
-                unknown.append(tup)
-        else: #TODO filter more!
+                pass
+        else: #Can't win them all
             unknown.append(tup)
 
     return tvShows, movies, unknown
