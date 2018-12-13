@@ -101,7 +101,8 @@ def get_series_name(name_of_file):
 #returns a folder name for the file to be placed in
 #creating an appropriate directory targetFolder + '/NameOfShow/Seasons XX/..'
 def get_season(name_of_file):
-    seasonVal = name_of_file[1]
+    seasonMatch = re.search(r'\d?\d', name_of_file[1])
+    seasonVal = "Season " + seasonMatch.group(0)
     return str(seasonVal)
 
 ############################################ 
