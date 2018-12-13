@@ -154,6 +154,8 @@ def sort_to_new_folder(directFolder, targetFolder):
         else:
             dst_filename = os.path.join(movie_folder_path, os.path.basename(movie[-1]))
             shutil.move(movie[-1], dst_filename)
+        
+    for unsort in unknown
 
         
     #trash function for unrelated files after sorting
@@ -162,6 +164,6 @@ def sort_to_new_folder(directFolder, targetFolder):
 
     return None
 
-#sort_to_new_folder('downloads', 'test')
+sort_to_new_folder('downloads', 'structured')
 
 
