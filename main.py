@@ -1,11 +1,11 @@
 import os, re, PTN, shutil
 import string
 
-def filterFiles(Unordered):
+def filterFiles(unsorted):
     movies = []
     tvShows = []
     unknown = []
-    for tup in Unordered:
+    for tup in unsorted:
         info = tup[0]
         splitDir = tup[1].split('/')
         #Missing season in info
@@ -26,18 +26,14 @@ def filterFiles(Unordered):
         elif 'season' in info and 'episode' not in info:
             episode = re.search(r'[Ee]?\d{1,2}', info['title'])
             #check if we can find the episode number in the title
-            if episode != None:
-                episode = info['episode']
-                title = info['title'].lower()
-                tvShows.append((title, season, episode, tup[1]))
-            else:
-                season = str(info['season'])
-                title = info['title'].lower()
-                tvShows.append((title, season, episode, tup[1]))
+            season = str(info['season'])
+            title = info['title'].lower()
+            tvShows.append((title, season, episode, tup[1]))
         #Before we start checking for any digits in the filenames, sort out any files we can be confident belong in movies
         elif 'year' and 'resolution' in info:
             title = info['title'].lower()
             movies.append((title, tup[1]))
+        #the parser isn't 100% accurate, sometimes the year count
         elif re.search(r'[1-2]\d{3}', splitDir[-1]) is not None:
             title = info['title'].lower()
             movies.append((title, tup[1]))
@@ -67,9 +63,16 @@ def filterFiles(Unordered):
             episode = tmp[1:len(tmp)]
             title = info['title'].split()
             title  = " ".join(title[0:len(title)-1])
-            tvShows.append((title.strip('- '), season, episode, tup[1]))
+            tvShows.append((title, season, episode, tup[1]))
         else: #Can't win them all
             unknown.append(tup)
+
+    listSum = len(tvShows) + len(unknown) + len(movies)
+    if len(unsorted) == listSum:
+        pass
+    else:
+        print("Uh-oh, some files appear to have gotten lost in the filtering")
+        return
 
     return tvShows, movies, unknown
 
@@ -77,27 +80,17 @@ def get_valid_file_types(Directory):
     #all valid video file types
     valid_type =  ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv", "srt"]
     Unsorted = []
-    fileCounter = 0
     for dirName, subDirList, fileList in os.walk(Directory): #Walks the given directory and any subdirectory/ies
         for fName in fileList:
             if fName.split('.')[-1].lower() in valid_type: #only check if the file ends in a file-format we're looking for
-                fileCounter += 1 #counter to make sure we're listing every file we check
                 info = PTN.parse(fName) #extract all available information from filename via Parse-Torrent-Name library
                 path = os.path.join(dirName, fName)
                 Unsorted.append((info, path))
-                
-    tvShows, movies, unknown = filterFiles(Unsorted)
-    #make sure we've sorted every single file applicable to the valid typing
-    listSum = len(tvShows) + len(unknown) + len(movies)
-    if fileCounter == listSum:
-        pass
-    else:
-        print("Uh-oh, some files appear to have gotten lost in the filtering")
-        return
-    #will return more later
-    return tvShows, movies, unknown
 
-get_valid_file_types("downloads")
+    return Unsorted
+
+#get_valid_file_types("downloads")
+
 ############################################ 
 #cleans up the folder, removing any unnecessary files like .torrent and .nfo etc.
 def delete_trash_files(directory):
@@ -149,10 +142,14 @@ def get_series_name(name_of_file):
 #returns a folder name for the file to be placed in
 #creating an appropriate directory targetFolder + '/NameOfShow/Seasons XX/..'
 def get_season(name_of_file):
-    """seasonMatch = re.search(r'\d?\d', name_of_file[1])
-    seasonVal = "Season " + seasonMatch.group(0)"""
-    seasonVal = name_of_file[1]
-    return str(seasonVal)
+    seasonMatch = re.search(r'\d?\d', str(name_of_file[1]))
+    if seasonMatch is not None:
+        seasonVal = "Season " + str(seasonMatch.group(0))
+        return seasonVal
+    else:
+        return "Other"
+
+#get_season(['bla', "Adventure time Season 02"])
 
 ############################################ 
 #returns the movie name
@@ -163,12 +160,13 @@ def get_movie_title(name_of_file):
 ############################################ 
 #places all valid files into a new folder based on their name, and then into a specific season folder
 def sort_to_new_folder(directFolder, targetFolder):
-    tvShows, movies, unknown = get_valid_file_types(directFolder)
+    listedFiles = get_valid_file_types(directFolder)
+    tvShows, movies, unknown = filterFiles(listedFiles)
 
     for show in tvShows:
         name_folder_path = get_series_name(show)
         season_folder_path = get_season(show)
-        str_folder_path = targetFolder + '/' + 'TV' + '/' + name_folder_path + '/' + season_folder_path
+        str_folder_path = targetFolder + '/TV/' + name_folder_path + '/' + season_folder_path
         #this checks the file name of show and checks for corresponding folder name,
         #if it doesn't exists, it'll create a new one and be moved there
         #this has been commented out to test the trash function, it works perfectly otherwise
