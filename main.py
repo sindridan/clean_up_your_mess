@@ -10,7 +10,7 @@ def filterFiles(unsorted):
     tvShows = []
     unknown = []
     samples = []
-    print("Sorting files into Movies or Tv Shows")
+    print("Sorting files into Movies or TV shows")
     #Run through each file in the unsorted list, sorting it into seperated lists so that we can arrange them correctly in the new folder
     for tup in unsorted:
         info = tup[0]
@@ -110,6 +110,7 @@ def get_valid_file_types(Directory):
                 path = os.path.join(dirName, fName)
                 Unsorted.append((info, path))
 
+    print("Done sorting")
     return Unsorted
 
 
@@ -128,25 +129,27 @@ def delete_trash_files(directory):
                 trash.append(path)
     for pls_delete in trash:
         os.remove(pls_delete)
-    print("Done trashing...")
+    print("Trashing finished")
 ############################################ 
 #delete any empty folders left behind after sorting
 def delete_empty_folders(directory):
-  if not os.path.isdir(directory):
-    return
+    print("Deleting empty folders within the source folder..")
+    if not os.path.isdir(directory):
+        return
 
-  #traverses sub directories and deletes them
-  files = os.listdir(directory)
-  if len(files):
-    for f in files:
-      totalpath = os.path.join(directory, f)
-      if os.path.isdir(totalpath):
-        delete_empty_folders(totalpath)
+    #traverses sub directories and deletes them
+    files = os.listdir(directory)
+    if len(files):
+        for f in files:
+            totalpath = os.path.join(directory, f)
+            if os.path.isdir(totalpath):
+                delete_empty_folders(totalpath)
 
-  #checks the main dir and if empty, trashes it
-  files = os.listdir(directory)
-  if len(files) == 0:
-    os.rmdir(directory)
+    #checks the main dir and if empty, trashes it
+    files = os.listdir(directory)
+    if len(files) == 0:
+        os.rmdir(directory)
+    pri("No empty folders left in source folder")
 
 ############################################ 
 #returns a folder name fosr the file to be placed in
@@ -250,6 +253,6 @@ def sort_to_new_folder(directFolder, targetFolder):
     delete_trash_files(directFolder)
     delete_empty_folders(directFolder)
 
-    print("Finished cleaning your downloads folder :)")
+    print("Finished cleaning your downloads folder. Check out your target folder :)")
 sort_to_new_folder(sys.argv[1], sys.argv[2])
 
