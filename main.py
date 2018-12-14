@@ -92,12 +92,11 @@ def filterFiles(unsorted):
     #check to make sure we've got every path that got sent into the function sorted into one of the four lists
     listSum = len(tvShows) + len(unknown) + len(movies) + len(samples)
     if len(unsorted) == listSum:
-        pass
+        return tvShows, movies, unknown, samples
+
     else:
         print("Uh-oh, some files appear to have gotten lost in the filtering process.")
         return
-
-    return tvShows, movies, unknown, samples
 
 def get_valid_file_types(Directory):
     #all valid video file types
@@ -110,7 +109,6 @@ def get_valid_file_types(Directory):
                 path = os.path.join(dirName, fName)
                 Unsorted.append((info, path))
 
-    print("Done sorting")
     return Unsorted
 
 
@@ -133,7 +131,6 @@ def delete_trash_files(directory):
 ############################################ 
 #delete any empty folders left behind after sorting
 def delete_empty_folders(directory):
-    print("Deleting empty folders within the source folder..")
     if not os.path.isdir(directory):
         return
 
@@ -149,7 +146,6 @@ def delete_empty_folders(directory):
     files = os.listdir(directory)
     if len(files) == 0:
         os.rmdir(directory)
-    pri("No empty folders left in source folder")
 
 ############################################ 
 #returns a folder name fosr the file to be placed in
@@ -222,12 +218,13 @@ def sort_to_new_folder(directFolder, targetFolder):
 
     samples_path = targetFolder + delim + 'Samples'
 
+    print("Moving around samples")
     for samp in samples:
         #same as the unknown, the sample files with be moved to this specific folder
         #a reason why we keep these files is because some shows might include 'sample'
         #in their title but doesn't define it as a sample file
         sort_pathing_samples(samp, samples_path)
-
+    print("Moving TV shows")
     for show in tvShows:
         name_folder_path = get_series_name(show)
         season_folder_path = get_season(show)
@@ -236,7 +233,7 @@ def sort_to_new_folder(directFolder, targetFolder):
         #if it doesn't exists, it'll create a new one and be moved there
         #this has been commented out to test the trash function, it works perfectly otherwise
         sort_pathing_precise(show, str_folder_path)
-
+    print("Relocating movies")
     for movie in movies:
         movie_folder_path = get_movie_title(movie)
         movie_folder_path = targetFolder + delim + 'Movies' + delim + movie_folder_path
@@ -244,13 +241,15 @@ def sort_to_new_folder(directFolder, targetFolder):
         #this causes issues when working with .srt files (subtitles), we want those files 
         sort_pathing_precise(movie, movie_folder_path)
 
-    unknown_folder_path = targetFolder + delim + 'Unknown'   
+    unknown_folder_path = targetFolder + delim + 'Unknown'
+    print("Moving unknown files into " + unknown_folder_path)   
     for unsort in unknown:
         #there will be no special folders for items in the unknown
         sort_pathing_precise(unsort, unknown_folder_path)
 
     #trash function for unrelated files after sorting
     delete_trash_files(directFolder)
+    print("Deleting empty folders within the source folder..")
     delete_empty_folders(directFolder)
 
     print("Finished cleaning your downloads folder. Check out your target folder :)")
