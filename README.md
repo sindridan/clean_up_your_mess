@@ -16,3 +16,10 @@ End goal is for us to sort based on the Series name and what season the episode 
 ## Built with
 * [VS Code](https://code.visualstudio.com/Download) - Code editor
 * [Python](https://www.python.org/) - Programming language
+
+## Known issues / bugs
+* Struggles with inconsistent naming
+* Similarly does not sort shows with extended names with their shorter selves(e.g. QI and QI XL are sorted into seperate folders)
+* .str files have a small tendency to end up in their own directory for tv shows
+* Could do some file & directory name cleanup
+* Unknown folder could do some sorting on it's own, making the manual work required less tedious

@@ -41,9 +41,10 @@ def filterFiles(unsorted):
             tvShows.append((title.lower(), season, episode, tup[1]))
         #Before we start checking for any digits in the filenames, sort out any files we can be confident belong in movies
         elif 'year' and 'resolution' in info:
-            title = info['title'].lower()
-            movies.append((title, tup[1]))
+            title = info['title']
+            movies.append((title.lower(), tup[1]))
         #the rest are filenames the parser couldn't work out if they were part of a tv series or a movie
+
         #Most tvShows are in structured folders, let's use that to our advantage
         elif len(splitDir) > 3:
             #show folders are usually structured as 'downloads/showName/Season/episode
@@ -65,24 +66,25 @@ def filterFiles(unsorted):
                 title = splitDir[1]
                 episode = None
                 tvShows.append((title.lower(), season, episode, tup[1]))
-            else: #End of the line
+            else: #I'm not sure how to exit a nested if statement, so this is here on leftover duty
                 unknown.append(tup)
         #Some movies managed to slip through the parser, find any file with 19** or 20** in the name
         elif re.search(r'(19\d{2}|20\d{2})', splitDir[-1]) is not None:
-            title = info['title'].lower()
-            movies.append((title, tup[1]))
+            title = info['title']
+            movies.append((title.lower(), tup[1]))
+        #final attempt at sorting out more difficult tv shows, grabbing any show whos title ends with 3 digits
         elif  'quality' in info:
-            tmp = info['title'].split()
+            tmp = info['title'].split(' ')
             if tmp[-1].isdigit():
                 title = ' '.join(tmp[0:len(tmp)-1])
                 season = tmp[-1][0]
                 episode = tmp[-1][1:]
                 tvShows.append((title.lower(), season, episode, tup[1]))
-            else: #Final stop
+            else: #Same as the else statement above, leftovers
                 unknown.append(tup)
-        else: #Can't win them all
+        else: #Hungry hungry hippo
             unknown.append(tup)
-
+    #check to make sure we've got every path that got sent into the function sorted into one of the four lists
     listSum = len(tvShows) + len(unknown) + len(movies) + len(samples)
     if len(unsorted) == listSum:
         pass
