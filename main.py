@@ -5,6 +5,7 @@ def filterFiles(unsorted):
     movies = []
     tvShows = []
     unknown = []
+    #Run through each file in the unsorted list, sorting it into seperated lists so that we can arrange them correctly in the new folder
     for tup in unsorted:
         info = tup[0]
         splitDir = tup[1].split('/')
@@ -12,58 +13,65 @@ def filterFiles(unsorted):
         if 'episode' in info and 'season' not in info: #Default to Season 01
             season = "Season 01"
             episode = info['episode']
-            title = info['title'].lower()
-            tvShows.append((title, season, episode, tup[1]))
+            title = info['title']
+            tvShows.append((title.lower(), season, episode, tup[1]))
         #both season and episode in info
         elif 'season' and 'episode' in info:
             season = info['season']
             episode = info['episode']
-            title = info['title'].lower()
+            title = info['title']
             if title == '':
                 title = splitDir[1]
-            tvShows.append((title, season, episode, tup[1]))
+            tvShows.append((title.lower(), season, episode, tup[1]))
         #only season in info
         elif 'season' in info and 'episode' not in info:
             episode = re.search(r'[Ee]?\d{1,2}', info['title'])
             #check if we can find the episode number in the title
             season = str(info['season'])
-            title = info['title'].lower()
-            tvShows.append((title, season, episode, tup[1]))
+            title = info['title']
+            tvShows.append((title.lower(), season, episode, tup[1]))
         #Before we start checking for any digits in the filenames, sort out any files we can be confident belong in movies
         elif 'year' and 'resolution' in info:
             title = info['title'].lower()
             movies.append((title, tup[1]))
-        #the parser isn't 100% accurate, sometimes the year count
-        elif re.search(r'[1-2]\d{3}', splitDir[-1]) is not None:
-            title = info['title'].lower()
-            movies.append((title, tup[1]))
+        #the rest are filenames the parser couldn't work out if they were part of a tv series or a movie
+        #Most tvShows are in structured folders, let's use that to our advantage
         elif len(splitDir) > 3:
+            #show folders are usually structured as 'downloads/showName/Season/episode
+            #check if there's any indication of "season" in the 2nd folder
             if 'season' or 'sería' in splitDir[2].lower():
                 season = splitDir[2]
                 title = splitDir[1]
                 episode = None
-                tvShows.append((title, season, episode, tup[1]))
+                tvShows.append((title.lower(), season, episode, tup[1]))
+            #check if there's a single digit season marker(i.e S1 or similar)
             elif re.fullmatch(r'[sS]\d', splitDir[2]) is not None:
-                print(splitDir[2])
                 season = splitDir[2]
                 title = splitDir[1]
                 episode = None
-                tvShows.append((title, season, episode, tup[1]))
-            elif splitDir[2].isdigit():
+                tvShows.append((title.lower(), season, episode, tup[1]))
+            #expected season folder is only 1-2 digits
+            elif splitDir[2].isdigit() and len(splitDir[2]) < 3:
                 season = "Season " + splitDir[2]
                 title = splitDir[1]
                 episode = None
-                tvShows.append((title, season, episode, tup[1]))
+                tvShows.append((title.lower(), season, episode, tup[1]))
             else:
                 pass
-        elif re.search(r'[1-9]\d\d', info['title']) is not None:
-            tmp = re.search(r'[1-9]\d\d', info['title'])
-            tmp = tmp.group(0)
-            season = "Season " + tmp[0]
-            episode = tmp[1:len(tmp)]
-            title = info['title'].split()
-            title  = " ".join(title[0:len(title)-1])
-            tvShows.append((title, season, episode, tup[1]))
+        #Some movies managed to slip through the parser, find any file with 19** or 20** in the name
+        elif re.search(r'(19\d{2}|20\d{2})', splitDir[-1]) is not None:
+            title = info['title'].lower()
+            movies.append((title, tup[1]))
+        elif  'quality' in info:
+            tmp = info['title'].split()
+            if tmp[-1].isdigit():
+                title = ' '.join(tmp[0:len(tmp)-1])
+                season = tmp[-1][0]
+                episode = tmp[-1][1:]
+                print(title + "S" + season + "E" + episode)
+                tvShows.append((title.lower(), season, episode, tup[1]))
+            else:
+                unknown.append(tup)
         else: #Can't win them all
             unknown.append(tup)
 
@@ -75,6 +83,7 @@ def filterFiles(unsorted):
         return
 
     return tvShows, movies, unknown
+
 
 def get_valid_file_types(Directory):
     #all valid video file types
@@ -88,6 +97,7 @@ def get_valid_file_types(Directory):
                 Unsorted.append((info, path))
 
     return Unsorted
+
 
 #get_valid_file_types("downloads")
 
@@ -159,10 +169,23 @@ def sort_to_new_folder(directFolder, targetFolder):
     listedFiles = get_valid_file_types(directFolder)
     tvShows, movies, unknown = filterFiles(listedFiles)
 
+    if len(unknown) != 0:
+        for x in unknown:
+            print(x)
+        print(len(unknown))
+        return
+
+    if os.name == 'nt':
+        #Windows-based system
+        delim = '\\'
+    else:
+        #Linux or Unix
+        delim = '/'
+
     for show in tvShows:
         name_folder_path = get_series_name(show)
         season_folder_path = get_season(show)
-        str_folder_path = targetFolder + '/TV/' + name_folder_path + '/' + season_folder_path
+        str_folder_path = targetFolder + delim + 'TV' + delim + name_folder_path + delim + season_folder_path
         #this checks the file name of show and checks for corresponding folder name,
         #if it doesn't exists, it'll create a new one and be moved there
         #this has been commented out to test the trash function, it works perfectly otherwise
@@ -175,7 +198,7 @@ def sort_to_new_folder(directFolder, targetFolder):
 
     for movie in movies:
         movie_folder_path = get_movie_title(movie)
-        movie_folder_path = targetFolder + '/' + 'Movies' + '/' + movie_folder_path
+        movie_folder_path = targetFolder + delim + 'Movies' + delim + movie_folder_path
         #creates a directory for the movie itself instead of having each file directly in the movie directory
         #this causes issues when working with .srt files (subtitles), we want those files 
         if not os.path.exists(movie_folder_path):
@@ -185,7 +208,7 @@ def sort_to_new_folder(directFolder, targetFolder):
             dst_filename = os.path.join(movie_folder_path, os.path.basename(movie[-1]))
             shutil.move(movie[-1], dst_filename)
 
-    unknown_folder_path = targetFolder + '/' + 'Unknown'   
+    unknown_folder_path = targetFolder + delim + 'Unknown'   
     for unsort in unknown:
         #there will be no special folders for items in the unknown
         if not os.path.exists(unknown_folder_path):
