@@ -1,4 +1,5 @@
 import os, re, PTN, shutil
+import string
 
 def filterFiles(Unordered):
     movies = []
@@ -40,14 +41,6 @@ def filterFiles(Unordered):
         elif re.search(r'[1-2]\d{3}', splitDir[-1]) is not None:
             title = info['title'].lower()
             movies.append((title, tup[1]))
-        elif re.search(r'[1-9]\d\d', info['title']) is not None:
-            tmp = re.search(r'[1-9]\d\d', info['title'])
-            tmp = tmp.group(0)
-            season = "Season " + tmp[0]
-            episode = tmp[1:len(tmp)]
-            title = info['title'].split()
-            title  = " ".join(title[0:len(title)-1])
-            tvShows.append((title.strip('- '), season, episode, tup[1]))
         elif len(splitDir) > 3:
             if 'season' or 'sería' in splitDir[2].lower():
                 season = splitDir[2]
@@ -67,6 +60,14 @@ def filterFiles(Unordered):
                 tvShows.append((title, season, episode, tup[1]))
             else:
                 pass
+        elif re.search(r'[1-9]\d\d', info['title']) is not None:
+            tmp = re.search(r'[1-9]\d\d', info['title'])
+            tmp = tmp.group(0)
+            season = "Season " + tmp[0]
+            episode = tmp[1:len(tmp)]
+            title = info['title'].split()
+            title  = " ".join(title[0:len(title)-1])
+            tvShows.append((title.strip('- '), season, episode, tup[1]))
         else: #Can't win them all
             unknown.append(tup)
 
@@ -134,9 +135,11 @@ def delete_empty_folders(directory):
 #returns a folder name fosr the file to be placed in
 #creating an appropriate directory targetFolder + '/NameOfShow/..'
 def get_series_name(name_of_file):
-
     showName = name_of_file[0]
-    return str(showName)
+
+    showName = re.sub('[^0-9a-zA-Z\']+', ' ', showName)
+    showName = showName.strip()
+    return string.capwords(showName)
 
 ############################################ 
 #returns a folder name for the file to be placed in
@@ -203,5 +206,3 @@ def sort_to_new_folder(directFolder, targetFolder):
     return None
 
 sort_to_new_folder('downloads', 'structured')
-
-
