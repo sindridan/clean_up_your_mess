@@ -132,6 +132,10 @@ def delete_empty_folders(directory):
     os.rmdir(directory)
 
 ############################################ 
+def delete_sample_file(directory):
+    return None
+
+############################################ 
 #returns a folder name fosr the file to be placed in
 #creating an appropriate directory targetFolder + '/NameOfShow/..'
 def get_series_name(name_of_file):
