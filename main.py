@@ -5,11 +5,15 @@ def filterFiles(unsorted):
     movies = []
     tvShows = []
     unknown = []
+    samples = []
     for tup in unsorted:
         info = tup[0]
         splitDir = tup[1].split('/')
+        #filtering out sample files, not very useful at this point but will be sorted to special folder if user needs them
+        if 'sample' in splitDir[-1].lower():
+            samples.append((tup[1]))
         #Missing season in info
-        if 'episode' in info and 'season' not in info: #Default to Season 01
+        elif 'episode' in info and 'season' not in info: #Default to Season 01
             season = "Season 01"
             episode = info['episode']
             title = info['title'].lower()
@@ -67,14 +71,14 @@ def filterFiles(unsorted):
         else: #Can't win them all
             unknown.append(tup)
 
-    listSum = len(tvShows) + len(unknown) + len(movies)
+    listSum = len(tvShows) + len(unknown) + len(movies) + len(samples)
     if len(unsorted) == listSum:
         pass
     else:
         print("Uh-oh, some files appear to have gotten lost in the filtering")
         return
 
-    return tvShows, movies, unknown
+    return tvShows, movies, unknown, samples
 
 def get_valid_file_types(Directory):
     #all valid video file types
@@ -149,19 +153,33 @@ def get_season(name_of_file):
     else:
         return "Other"
 
-#get_season(['bla', "Adventure time Season 02"])
-
 ############################################ 
 #returns the movie name
 def get_movie_title(name_of_file):
     movie_title = name_of_file[0]
-    return str(movie_title)
+
+    movie_title = re.sub('[^0-9a-zA-Z\']+', ' ', movie_title)
+    movie_title = movie_title.strip()
+    return string.capwords(movie_title)
 
 ############################################ 
 #places all valid files into a new folder based on their name, and then into a specific season folder
 def sort_to_new_folder(directFolder, targetFolder):
     listedFiles = get_valid_file_types(directFolder)
-    tvShows, movies, unknown = filterFiles(listedFiles)
+    tvShows, movies, unknown, samples = filterFiles(listedFiles)
+
+    samples_path = targetFolder + '/Samples'
+    for samp in samples:
+        #same as the unknown, the sample files with be moved to this specific folder
+        #a reason why we keep these files is because some shows might include 'sample'
+        #in their title but doesn't define it as a sample file
+        if not os.path.exists(samples_path):
+            os.makedirs(samples_path)
+            shutil.move(samp, samples_path)
+        else:
+            dst_filename = os.path.join(samples_path, os.path.basename(samp))
+            shutil.move(samp, dst_filename)
+
 
     for show in tvShows:
         name_folder_path = get_series_name(show)
@@ -179,7 +197,7 @@ def sort_to_new_folder(directFolder, targetFolder):
 
     for movie in movies:
         movie_folder_path = get_movie_title(movie)
-        movie_folder_path = targetFolder + '/' + 'Movies' + '/' + movie_folder_path
+        movie_folder_path = targetFolder + '/Movies/' + movie_folder_path
         #creates a directory for the movie itself instead of having each file directly in the movie directory
         #this causes issues when working with .srt files (subtitles), we want those files 
         if not os.path.exists(movie_folder_path):
@@ -189,7 +207,7 @@ def sort_to_new_folder(directFolder, targetFolder):
             dst_filename = os.path.join(movie_folder_path, os.path.basename(movie[-1]))
             shutil.move(movie[-1], dst_filename)
 
-    unknown_folder_path = targetFolder + '/' + 'Unknown'   
+    unknown_folder_path = targetFolder + '/Unknown'   
     for unsort in unknown:
         #there will be no special folders for items in the unknown
         if not os.path.exists(unknown_folder_path):
@@ -198,8 +216,7 @@ def sort_to_new_folder(directFolder, targetFolder):
         else:
             dst_filename = os.path.join(unknown_folder_path, os.path.basename(unsort[-1]))
             shutil.move(unsort[-1], dst_filename)
-
-
+    
         
     #trash function for unrelated files after sorting
     delete_trash_files(directFolder)
