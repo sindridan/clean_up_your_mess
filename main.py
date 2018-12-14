@@ -10,6 +10,7 @@ def filterFiles(unsorted):
     tvShows = []
     unknown = []
     samples = []
+    print("Sorting files into Movies or Tv Shows")
     #Run through each file in the unsorted list, sorting it into seperated lists so that we can arrange them correctly in the new folder
     for tup in unsorted:
         info = tup[0]
@@ -93,13 +94,14 @@ def filterFiles(unsorted):
     if len(unsorted) == listSum:
         pass
     else:
-        print("Uh-oh, some files appear to have gotten lost in the filtering")
+        print("Uh-oh, some files appear to have gotten lost in the filtering process.")
         return
 
     return tvShows, movies, unknown, samples
 
 def get_valid_file_types(Directory):
     #all valid video file types
+    print("Finding all video files in " + Directory)
     Unsorted = []
     for dirName, subDirList, fileList in os.walk(Directory): #Walks the given directory and any subdirectory/ies
         for fName in fileList:
