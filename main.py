@@ -92,7 +92,6 @@ def filterFiles(unsorted):
 
     return tvShows, movies, unknown, samples
 
-
 def get_valid_file_types(Directory):
     #all valid video file types
     valid_type =  ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv", "srt"]
