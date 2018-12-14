@@ -163,6 +163,32 @@ def get_movie_title(name_of_file):
     return string.capwords(movie_title)
 
 ############################################ 
+#1 helper function for sort_to_new_folder
+#checks the path and if it doesn't exist, it creates the directory and moves item into it
+#else just moves into it and overwrites duplicates
+def sort_pathing_samples(item, newPath):
+    if not os.path.exists(newPath):
+        os.makedirs(newPath)
+        shutil.move(item, newPath)
+    else:
+        dst_filename = os.path.join(newPath, os.path.basename(item))
+        shutil.move(item, dst_filename)
+
+############################################ 
+#2 helper function for sort_to_new_folder
+#checks the path and if it doesn't exist, it creates the directory and moves item into it
+#else just moves into it and overwrites duplicates
+#only works for files that are going to be in subdirectories like seasons and movies alongside .srt files etc.
+def sort_pathing_precise(item, newPath):
+    if not os.path.exists(newPath):
+        os.makedirs(newPath)
+        shutil.move(item[-1], newPath)
+    else:
+        #if duplicates, overwrite
+        dst_filename = os.path.join(newPath, os.path.basename(item[-1]))
+        shutil.move(item[-1], dst_filename)
+
+############################################ 
 #places all valid files into a new folder based on their name, and then into a specific season folder
 def sort_to_new_folder(directFolder, targetFolder):
     listedFiles = get_valid_file_types(directFolder)
@@ -173,13 +199,7 @@ def sort_to_new_folder(directFolder, targetFolder):
         #same as the unknown, the sample files with be moved to this specific folder
         #a reason why we keep these files is because some shows might include 'sample'
         #in their title but doesn't define it as a sample file
-        if not os.path.exists(samples_path):
-            os.makedirs(samples_path)
-            shutil.move(samp, samples_path)
-        else:
-            dst_filename = os.path.join(samples_path, os.path.basename(samp))
-            shutil.move(samp, dst_filename)
-
+        sort_pathing_samples(samp, samples_path)
 
     for show in tvShows:
         name_folder_path = get_series_name(show)
@@ -188,40 +208,22 @@ def sort_to_new_folder(directFolder, targetFolder):
         #this checks the file name of show and checks for corresponding folder name,
         #if it doesn't exists, it'll create a new one and be moved there
         #this has been commented out to test the trash function, it works perfectly otherwise
-        if not os.path.exists(str_folder_path):
-            os.makedirs(str_folder_path)
-            shutil.move(show[-1], str_folder_path)
-        else:
-            dst_filename = os.path.join(str_folder_path, os.path.basename(show[-1]))
-            shutil.move(show[-1], dst_filename)
+        sort_pathing_precise(show, str_folder_path)
 
     for movie in movies:
         movie_folder_path = get_movie_title(movie)
         movie_folder_path = targetFolder + '/Movies/' + movie_folder_path
         #creates a directory for the movie itself instead of having each file directly in the movie directory
         #this causes issues when working with .srt files (subtitles), we want those files 
-        if not os.path.exists(movie_folder_path):
-            os.makedirs(movie_folder_path)
-            shutil.move(movie[-1], movie_folder_path)
-        else:
-            dst_filename = os.path.join(movie_folder_path, os.path.basename(movie[-1]))
-            shutil.move(movie[-1], dst_filename)
+        sort_pathing_precise(movie, movie_folder_path)
 
     unknown_folder_path = targetFolder + '/Unknown'   
     for unsort in unknown:
         #there will be no special folders for items in the unknown
-        if not os.path.exists(unknown_folder_path):
-            os.makedirs(unknown_folder_path)
-            shutil.move(unsort[-1], unknown_folder_path)
-        else:
-            dst_filename = os.path.join(unknown_folder_path, os.path.basename(unsort[-1]))
-            shutil.move(unsort[-1], dst_filename)
-    
-        
+        sort_pathing_precise(unsort, unknown_folder_path)
+
     #trash function for unrelated files after sorting
     delete_trash_files(directFolder)
     delete_empty_folders(directFolder)
-
-    return None
 
 sort_to_new_folder('downloads', 'structured')
