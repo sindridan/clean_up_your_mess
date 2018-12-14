@@ -1,5 +1,4 @@
-import os, re, PTN, shutil
-import string
+import os, re, PTN, shutil, string, sys
 #global variable for all valid media file types
 valid_type = ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv", "srt"]
 #g.v. for all valid audio types. Note that music and audio files wont be sorted with other media and will stay put in the source directory
@@ -117,18 +116,17 @@ def get_valid_file_types(Directory):
 ############################################ 
 #cleans up the folder, removing any unnecessary files like .torrent and .nfo etc.
 def delete_trash_files(directory):
-    print("Trashing everything not audio or media related (.txt, .jpg, .torrent, etc)")
+    print("Trashing everything not audio or media related (.txt, .jpg, .torrent, etc)...")
     trash = []
     for dirName, subDirList, fileList in os.walk(directory): #Walks the given directory and any subdirectory/ies
         for fName in fileList:
             if fName.split('.')[-1] not in (valid_type and audio_type): #only check if the file ends in a file-format we're looking for
                 #info = PTN.parse(fName) #extract all available information from filename via Parse-Torrent-Name library
                 path = os.path.join(dirName, fName)
-                print(path)
                 trash.append(path)
     for pls_delete in trash:
         os.remove(pls_delete)
-
+    print("Done trashing...")
 ############################################ 
 #delete any empty folders left behind after sorting
 def delete_empty_folders(directory):
@@ -251,4 +249,5 @@ def sort_to_new_folder(directFolder, targetFolder):
     delete_empty_folders(directFolder)
 
     print("Finished cleaning your downloads folder :)")
-sort_to_new_folder('downloads', 'structured')
+sort_to_new_folder(sys.argv[1], sys.argv[2])
+
