@@ -5,16 +5,25 @@ def filterFiles(unsorted):
     movies = []
     tvShows = []
     unknown = []
+    samples = []
     #Run through each file in the unsorted list, sorting it into seperated lists so that we can arrange them correctly in the new folder
     for tup in unsorted:
         info = tup[0]
         splitDir = tup[1].split('/')
+        #filtering out sample files, not very useful at this point but will be sorted to special folder if user needs them
+        if 'sample' in splitDir[-1].lower():
+            samples.append((tup[1]))
         #Missing season in info
-        if 'episode' in info and 'season' not in info: #Default to Season 01
-            season = "Season 01"
+        elif 'episode' in info and 'season' not in info: #search for s+digit in filename, else default to Season 1
+            season = re.search(r'[sS]\d{1,2}', splitDir[-1])
             episode = info['episode']
             title = info['title']
-            tvShows.append((title.lower(), season, episode, tup[1]))
+            if season is not None: #found some season marker in filename, using it
+                season = season.group(0)
+                tvShows.append((title.lower(), season, episode, tup[1]))
+            else: #nothing to indicate season in filename, defaulting to 1
+                season = "Season 1"
+                tvShows.append((title.lower(), season, episode, tup[1]))
         #both season and episode in info
         elif 'season' and 'episode' in info:
             season = info['season']
@@ -56,8 +65,8 @@ def filterFiles(unsorted):
                 title = splitDir[1]
                 episode = None
                 tvShows.append((title.lower(), season, episode, tup[1]))
-            else:
-                pass
+            else: #End of the line
+                unknown.append(tup)
         #Some movies managed to slip through the parser, find any file with 19** or 20** in the name
         elif re.search(r'(19\d{2}|20\d{2})', splitDir[-1]) is not None:
             title = info['title'].lower()
@@ -68,21 +77,20 @@ def filterFiles(unsorted):
                 title = ' '.join(tmp[0:len(tmp)-1])
                 season = tmp[-1][0]
                 episode = tmp[-1][1:]
-                print(title + "S" + season + "E" + episode)
                 tvShows.append((title.lower(), season, episode, tup[1]))
-            else:
+            else: #Final stop
                 unknown.append(tup)
         else: #Can't win them all
             unknown.append(tup)
 
-    listSum = len(tvShows) + len(unknown) + len(movies)
+    listSum = len(tvShows) + len(unknown) + len(movies) + len(samples)
     if len(unsorted) == listSum:
         pass
     else:
         print("Uh-oh, some files appear to have gotten lost in the filtering")
         return
 
-    return tvShows, movies, unknown
+    return tvShows, movies, unknown, samples
 
 
 def get_valid_file_types(Directory):
@@ -135,6 +143,10 @@ def delete_empty_folders(directory):
     os.rmdir(directory)
 
 ############################################ 
+def delete_sample_file(directory):
+    return None
+
+############################################ 
 #returns a folder name fosr the file to be placed in
 #creating an appropriate directory targetFolder + '/NameOfShow/..'
 def get_series_name(name_of_file):
@@ -155,32 +167,41 @@ def get_season(name_of_file):
     else:
         return "Other"
 
-#get_season(['bla', "Adventure time Season 02"])
-
 ############################################ 
 #returns the movie name
 def get_movie_title(name_of_file):
     movie_title = name_of_file[0]
-    return str(movie_title)
+
+    movie_title = re.sub('[^0-9a-zA-Z\']+', ' ', movie_title)
+    movie_title = movie_title.strip()
+    return string.capwords(movie_title)
 
 ############################################ 
 #places all valid files into a new folder based on their name, and then into a specific season folder
 def sort_to_new_folder(directFolder, targetFolder):
-    listedFiles = get_valid_file_types(directFolder)
-    tvShows, movies, unknown = filterFiles(listedFiles)
-
-    if len(unknown) != 0:
-        for x in unknown:
-            print(x)
-        print(len(unknown))
-        return
-
     if os.name == 'nt':
         #Windows-based system
         delim = '\\'
     else:
         #Linux or Unix
         delim = '/'
+
+    listedFiles = get_valid_file_types(directFolder)
+    tvShows, movies, unknown, samples = filterFiles(listedFiles)
+
+    samples_path = targetFolder + delim + 'Samples'
+
+    for samp in samples:
+        #same as the unknown, the sample files with be moved to this specific folder
+        #a reason why we keep these files is because some shows might include 'sample'
+        #in their title but doesn't define it as a sample file
+        if not os.path.exists(samples_path):
+            os.makedirs(samples_path)
+            shutil.move(samp, samples_path)
+        else:
+            dst_filename = os.path.join(samples_path, os.path.basename(samp))
+            shutil.move(samp, dst_filename)
+
 
     for show in tvShows:
         name_folder_path = get_series_name(show)
@@ -217,8 +238,7 @@ def sort_to_new_folder(directFolder, targetFolder):
         else:
             dst_filename = os.path.join(unknown_folder_path, os.path.basename(unsort[-1]))
             shutil.move(unsort[-1], dst_filename)
-
-
+    
         
     #trash function for unrelated files after sorting
     delete_trash_files(directFolder)
