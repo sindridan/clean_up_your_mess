@@ -1,5 +1,10 @@
 import os, re, PTN, shutil
 import string
+#global variable for all valid media file types
+valid_type = ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv", "srt"]
+#g.v. for all valid audio types. Note that music and audio files wont be sorted with other media and will stay put in the source directory
+#taken from wikipedia https://en.wikipedia.org/wiki/Audio_file_format
+audio_type = ["aa", "acc", "aax", "aiff", "act", "amr", "ape", "au", "awb", "dct", "dss", "dvf", "flac", "gsm", "ivs", "m4a", "m4b", "m4p", "mmf", "mp3", "mpc", "msv", "nsf", "ogg", "oga", "mogg", "opus", "ra", "rm", "raw", "sln", "tta", "vox", "wav", "wv", "webm", "8svx" ]
 
 def filterFiles(unsorted):
     movies = []
@@ -96,7 +101,6 @@ def filterFiles(unsorted):
 
 def get_valid_file_types(Directory):
     #all valid video file types
-    valid_type =  ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv", "srt"]
     Unsorted = []
     for dirName, subDirList, fileList in os.walk(Directory): #Walks the given directory and any subdirectory/ies
         for fName in fileList:
@@ -113,13 +117,14 @@ def get_valid_file_types(Directory):
 ############################################ 
 #cleans up the folder, removing any unnecessary files like .torrent and .nfo etc.
 def delete_trash_files(directory):
+    print("Trashing everything not audio or media related (.txt, .jpg, .torrent, etc)")
     trash = []
-    valid_type =  ["3gp", "3g2", "asf", "amv", "avi", "drc", "flv", "f4v", "f4p", "f4a", "f4b", "gif", "m4v", "mxf", "mkv", "mts", "m2ts", "mpg", "mpeg", "m2v", "mp4", "m4p", "mng", "ogv", "ogg", "mov", "qt", "rm", "vob", "wmv", "srt"]
     for dirName, subDirList, fileList in os.walk(directory): #Walks the given directory and any subdirectory/ies
         for fName in fileList:
-            if fName.split('.')[-1] not in valid_type: #only check if the file ends in a file-format we're looking for
+            if fName.split('.')[-1] not in (valid_type and audio_type): #only check if the file ends in a file-format we're looking for
                 #info = PTN.parse(fName) #extract all available information from filename via Parse-Torrent-Name library
                 path = os.path.join(dirName, fName)
+                print(path)
                 trash.append(path)
     for pls_delete in trash:
         os.remove(pls_delete)
@@ -138,14 +143,10 @@ def delete_empty_folders(directory):
       if os.path.isdir(totalpath):
         delete_empty_folders(totalpath)
 
-  #checks the mmain dir and if empty, trashes it
+  #checks the main dir and if empty, trashes it
   files = os.listdir(directory)
   if len(files) == 0:
     os.rmdir(directory)
-
-############################################ 
-def delete_sample_file(directory):
-    return None
 
 ############################################ 
 #returns a folder name fosr the file to be placed in
@@ -249,6 +250,5 @@ def sort_to_new_folder(directFolder, targetFolder):
     delete_trash_files(directFolder)
     delete_empty_folders(directFolder)
 
-    return None
-
+    print("Finished cleaning your downloads folder :)")
 sort_to_new_folder('downloads', 'structured')
