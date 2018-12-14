@@ -15,10 +15,8 @@ End goal is for us to sort based on the Series name and what season the episode 
 * Open up your terminal (MacOS) or command prompt (Windows) in the directory containing the source folder
 * Run the following command: python3 main.py 'Source folder name' 'Target folder name'
 * The two arguements in the bottom of the main.py script: sys.argv[1], sys.argv[2], read the path to the directory
-* from the user and gathers the files from sys.argv[1] (source directory), sorts it and structures the files
-* in sys.arg[2] (target directory).
-* This can be run anywhere but make sure that you're using the correct directories:
-* For example: (MacOS) SindriDan/pyFinalProject/main.py ../Downloads ../StructuredDownloads
+* from the user and gathers the files from sys.argv[1] (source directory), sorts it and structures the files in sys.arg[2] (target directory).
+* This can be run anywhere but make sure that you're using the correct directories: For example: (MacOS) SindriDan/pyFinalProject/main.py ../Downloads ../StructuredDownloads
  
 
 
