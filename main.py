@@ -152,7 +152,6 @@ def delete_empty_folders(directory):
 #creating an appropriate directory targetFolder + '/NameOfShow/..'
 def get_series_name(name_of_file):
     showName = name_of_file[0]
-
     showName = re.sub('[^0-9a-zA-Z\']+', ' ', showName)
     showName = showName.strip()
     return string.capwords(showName)
@@ -163,7 +162,10 @@ def get_series_name(name_of_file):
 def get_season(name_of_file):
     seasonMatch = re.search(r'\d?\d', str(name_of_file[1]))
     if seasonMatch is not None:
-        seasonVal = "Season " + str(seasonMatch.group(0))
+        if len(str(seasonMatch.group(0))) == 1:
+            seasonVal = "Season 0" + str(seasonMatch.group(0))
+        else:
+            seasonVal = "Season " + str(seasonMatch.group(0))
         return seasonVal
     else:
         return "Other"

@@ -35,6 +35,7 @@ End goal is for us to sort based on the Series name and what season the episode 
 * Could do some file & directory name cleanup
 * Unknown folder could do some sorting on it's own, making the manual work required less tedious
 * All sample files are relocated to a single folder in the target directory. They can be reviewed there and deleted.
+* Some outtakes from shows are .rm files and usually end up in their own directory, they are easy to spot in the main directory for TV shows but no easy fix for it.
 
 ## Notes:
 * Our script has only been tested on a Mac but with our OS check function, it should be able to run on other operating systems
