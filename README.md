@@ -31,9 +31,10 @@ End goal is for us to sort based on the Series name and what season the episode 
 ## Known issues / bugs
 * Struggles with inconsistent naming
 * Similarly does not sort shows with extended names with their shorter selves(e.g. QI and QI XL are sorted into seperate folders)
-* .str files have a small tendency to end up in their own directory for tv shows
+* .srt (subtitles) files have a small tendency to end up in their own directory for tv shows
 * Could do some file & directory name cleanup
 * Unknown folder could do some sorting on it's own, making the manual work required less tedious
+* All sample files are relocated to a single folder in the target directory. They can be reviewed there and deleted.
 
 ## Notes:
 * Our script has only been tested on a Mac but with our OS check function, it should be able to run on other operating systems
